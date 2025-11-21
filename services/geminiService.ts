@@ -54,10 +54,39 @@ export const analyzeVideoContent = async (url: string): Promise<AiAnalysisResult
     // Fallback mock data if AI fails or key is invalid
     return {
       summary: "Could not analyze specific video details. This appears to be a media link.",
-      hashtags: ["#video", "#download", "#savefromai", "#media", "#viral"],
+      hashtags: ["#video", "#download", "#mediagen", "#media", "#viral"],
       suggestedFileName: "video_download.mp4",
       category: "General",
       sentiment: "Neutral"
     };
   }
+};
+
+export const generateAiVideo = async (prompt: string, aspectRatio: '16:9' | '9:16' = '16:9'): Promise<string> => {
+  // IMPORTANT: Re-initialize AI with the selected key from environment or dialog context
+  // This handles the race condition mentioned in docs by creating a fresh instance
+  const currentKey = process.env.API_KEY;
+  const freshAi = new GoogleGenAI({ apiKey: currentKey });
+
+  let operation = await freshAi.models.generateVideos({
+    model: 'veo-3.1-fast-generate-preview',
+    prompt: prompt,
+    config: {
+      numberOfVideos: 1,
+      resolution: '1080p',
+      aspectRatio: aspectRatio
+    }
+  });
+
+  // Poll for completion
+  while (!operation.done) {
+    await new Promise(resolve => setTimeout(resolve, 5000)); // Check every 5 seconds
+    operation = await freshAi.operations.getVideosOperation({operation: operation});
+  }
+
+  const videoUri = operation.response?.generatedVideos?.[0]?.video?.uri;
+  if (!videoUri) throw new Error("Video generation failed");
+
+  // Append key for playback
+  return `${videoUri}&key=${currentKey}`;
 };
