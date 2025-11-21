@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { Wand2, Loader2, Play, AlertCircle, Download } from 'lucide-react';
 import { generateAiVideo } from '../services/geminiService';
+import { downloadMedia } from '../services/downloadService';
 
 const VideoGenerator: React.FC = () => {
   const [prompt, setPrompt] = useState('');
@@ -61,26 +63,8 @@ const VideoGenerator: React.FC = () => {
     setIsDownloading(true);
 
     try {
-      // Using fetch to get the blob allows us to force download properly
-      // rather than opening in a new tab which often happens with basic anchor tags
-      const response = await fetch(videoUrl);
-      if (!response.ok) throw new Error("Network response was not ok");
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `gemini-veo-${Date.now()}.mp4`;
-      
-      document.body.appendChild(a);
-      a.click();
-      
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }, 100);
+      const filename = `gemini-veo-${Date.now()}.mp4`;
+      await downloadMedia(videoUrl, filename);
     } catch (error) {
       console.error("Download failed", error);
       setError("Could not download automatically. Please right-click the video and select 'Save Video As'.");
@@ -213,7 +197,7 @@ const VideoGenerator: React.FC = () => {
                    ) : (
                      <Download size={18} />
                    )}
-                   {isDownloading ? 'Downloading...' : 'Download Video'}
+                   {isDownloading ? 'Saving...' : 'Download Video'}
                  </button>
               </div>
             </div>
