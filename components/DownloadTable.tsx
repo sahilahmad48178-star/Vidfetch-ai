@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DownloadFormat } from '../types';
-import { Download, Video, Music, VolumeX, Copy, Check } from 'lucide-react';
+import { Download, Video, Music, VolumeX, Copy, Check, Link } from 'lucide-react';
 
 const MOCK_FORMATS: DownloadFormat[] = [
   { quality: '1080p', format: 'MP4', size: '145 MB', isAudio: false, color: 'bg-brand-500' },
@@ -14,8 +14,8 @@ const DownloadTable: React.FC = () => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const handleCopy = (index: number, quality: string, format: string) => {
-    // Mocking a direct download link
-    const mockUrl = `https://dl.mediagen.ai/get?id=12345&q=${quality}&f=${format}`;
+    // Mocking a direct download link based on current timestamp to make it look dynamic
+    const mockUrl = `https://dl.mediagen.ai/get?id=${Date.now()}&q=${quality}&f=${format}`;
     navigator.clipboard.writeText(mockUrl).then(() => {
       setCopiedIndex(index);
       setTimeout(() => setCopiedIndex(null), 2000);
@@ -25,8 +25,11 @@ const DownloadTable: React.FC = () => {
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
       <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-        <h3 className="font-bold text-slate-700">Download Links</h3>
-        <span className="text-xs font-medium px-2 py-1 bg-green-100 text-green-700 rounded">Ready</span>
+        <div className="flex items-center gap-2">
+           <Link size={16} className="text-brand-600"/>
+           <h3 className="font-bold text-slate-700">Download Options</h3>
+        </div>
+        <span className="text-xs font-medium px-2 py-1 bg-green-100 text-green-700 rounded">Ready to download</span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
@@ -51,17 +54,30 @@ const DownloadTable: React.FC = () => {
                 <td className="px-6 py-4 text-slate-600">{item.format}</td>
                 <td className="px-6 py-4 text-slate-600">{item.size}</td>
                 <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
+                  {/* Copy Link Button */}
                   <button
                     onClick={() => handleCopy(index, item.quality, item.format)}
-                    className="p-2 text-slate-400 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition-colors"
-                    title="Copy Link"
+                    className={`p-2 rounded-lg transition-all flex items-center gap-1 border ${
+                      copiedIndex === index 
+                      ? 'bg-green-50 border-green-200 text-green-600' 
+                      : 'bg-white border-slate-200 text-slate-400 hover:text-brand-500 hover:border-brand-200'
+                    }`}
+                    title="Copy Direct Link"
                   >
-                    {copiedIndex === index ? <Check size={18} className="text-green-600" /> : <Copy size={18} />}
+                    {copiedIndex === index ? (
+                      <Check size={18} />
+                    ) : (
+                      <Copy size={18} />
+                    )}
+                    <span className="sr-only">Copy Link</span>
                   </button>
+
+                  {/* Download Button */}
                   <button 
                     className={`inline-flex items-center gap-1.5 px-4 py-2 text-white text-sm font-semibold rounded-lg transition-transform active:scale-95 hover:shadow-md ${item.color} hover:brightness-110`}
                   >
-                    <Download size={16} /> Download
+                    <Download size={16} /> 
+                    <span className="hidden sm:inline">Download</span>
                   </button>
                 </td>
               </tr>
