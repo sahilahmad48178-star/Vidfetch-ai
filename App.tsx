@@ -78,7 +78,7 @@ const App: React.FC = () => {
                        <AiFeatures data={aiData} loading={isAiLoading} />
                        
                        {/* 2. Download Table */}
-                       <DownloadTable />
+                       <DownloadTable videoUrl={videoData.originalUrl} videoTitle={videoData.title} />
                     </div>
 
                     {/* Right Column: Thumbnail/Card */}

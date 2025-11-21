@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { DownloadFormat } from '../types';
-import { Download, Video, Music, VolumeX, Copy, Check, Link } from 'lucide-react';
+import { Download, Video, Music, VolumeX, Copy, Check, Link, Loader2 } from 'lucide-react';
+
+interface DownloadTableProps {
+  videoUrl?: string;
+  videoTitle?: string;
+}
 
 const MOCK_FORMATS: DownloadFormat[] = [
   { quality: '1080p', format: 'MP4', size: '145 MB', isAudio: false, color: 'bg-brand-500' },
@@ -10,16 +15,52 @@ const MOCK_FORMATS: DownloadFormat[] = [
   { quality: 'Muted', format: 'WEBM', size: '112 MB', isAudio: false, color: 'bg-orange-500' },
 ];
 
-const DownloadTable: React.FC = () => {
+const DownloadTable: React.FC<DownloadTableProps> = ({ videoUrl, videoTitle = 'video' }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [downloadingIndex, setDownloadingIndex] = useState<number | null>(null);
 
   const handleCopy = (index: number, quality: string, format: string) => {
-    // Mocking a direct download link based on current timestamp to make it look dynamic
     const mockUrl = `https://dl.mediagen.ai/get?id=${Date.now()}&q=${quality}&f=${format}`;
     navigator.clipboard.writeText(mockUrl).then(() => {
       setCopiedIndex(index);
       setTimeout(() => setCopiedIndex(null), 2000);
     });
+  };
+
+  const handleDownload = async (index: number, item: DownloadFormat) => {
+    setDownloadingIndex(index);
+    
+    // Simulate server-side processing/preparation time
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    try {
+      // In a real backend-connected app, this would be the direct link to the processed file.
+      // For this demo, we download a sample video file to demonstrate functionality.
+      const sampleVideoUrl = 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4';
+      
+      const response = await fetch(sampleVideoUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      // Sanitize filename
+      const safeTitle = videoTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase().substring(0, 30);
+      a.download = `${safeTitle}_${item.quality}.${item.format.toLowerCase()}`;
+      
+      document.body.appendChild(a);
+      a.click();
+      
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Download failed:", error);
+      // Fallback: open original URL if the sample download fails (e.g. network restriction)
+      if (videoUrl) window.open(videoUrl, '_blank');
+    } finally {
+      setDownloadingIndex(null);
+    }
   };
 
   return (
@@ -69,15 +110,25 @@ const DownloadTable: React.FC = () => {
                     ) : (
                       <Copy size={18} />
                     )}
-                    <span className="sr-only">Copy Link</span>
                   </button>
 
                   {/* Download Button */}
                   <button 
-                    className={`inline-flex items-center gap-1.5 px-4 py-2 text-white text-sm font-semibold rounded-lg transition-transform active:scale-95 hover:shadow-md ${item.color} hover:brightness-110`}
+                    onClick={() => handleDownload(index, item)}
+                    disabled={downloadingIndex !== null}
+                    className={`inline-flex items-center gap-1.5 px-4 py-2 text-white text-sm font-semibold rounded-lg transition-transform active:scale-95 hover:shadow-md ${item.color} hover:brightness-110 disabled:opacity-70 disabled:cursor-wait`}
                   >
-                    <Download size={16} /> 
-                    <span className="hidden sm:inline">Download</span>
+                    {downloadingIndex === index ? (
+                      <>
+                         <Loader2 size={16} className="animate-spin" />
+                         <span className="hidden sm:inline">...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download size={16} /> 
+                        <span className="hidden sm:inline">Download</span>
+                      </>
+                    )}
                   </button>
                 </td>
               </tr>

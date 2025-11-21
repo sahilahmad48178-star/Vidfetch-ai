@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wand2, Loader2, Play, AlertCircle } from 'lucide-react';
+import { Wand2, Loader2, Play, AlertCircle, Download } from 'lucide-react';
 import { generateAiVideo } from '../services/geminiService';
 
 const VideoGenerator: React.FC = () => {
@@ -173,9 +173,12 @@ const VideoGenerator: React.FC = () => {
               <div className="mt-4 flex justify-end">
                  <a 
                    href={videoUrl} 
+                   target="_blank"
+                   rel="noopener noreferrer"
                    download="generated-video.mp4"
-                   className="text-purple-600 font-bold hover:underline text-sm flex items-center gap-1"
+                   className="text-white bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-md"
                  >
+                   <Download size={16} />
                    Download Video
                  </a>
               </div>
