@@ -6,14 +6,14 @@ const VideoGenerator: React.FC = () => {
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16'>('16:9');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [hasKey, setHasKey] = useState(true); // Assume true initially, check on interaction
+  const [hasKey, setHasKey] = useState(true); 
 
   const checkKeyAndGenerate = async () => {
     setError(null);
     
-    // Check API Key status as per Veo requirements
     if ((window as any).aistudio) {
        const hasSelectedKey = await (window as any).aistudio.hasSelectedApiKey();
        if (!hasSelectedKey) {
@@ -22,9 +22,8 @@ const VideoGenerator: React.FC = () => {
            const success = await (window as any).aistudio.openSelectKey();
            if (success) {
              setHasKey(true);
-             // Proceed after selection
            } else {
-             return; // User cancelled
+             return; 
            }
          } catch (e) {
            console.error(e);
@@ -46,7 +45,6 @@ const VideoGenerator: React.FC = () => {
       setVideoUrl(url);
     } catch (err: any) {
       console.error("Generation failed", err);
-      // Handle specific "entity not found" error which implies key issues
       if (err.message?.includes("Requested entity was not found")) {
          setHasKey(false);
          setError("Authorization failed. Please select a valid paid API key.");
@@ -55,6 +53,39 @@ const VideoGenerator: React.FC = () => {
       }
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!videoUrl) return;
+    setIsDownloading(true);
+
+    try {
+      // Using fetch to get the blob allows us to force download properly
+      // rather than opening in a new tab which often happens with basic anchor tags
+      const response = await fetch(videoUrl);
+      if (!response.ok) throw new Error("Network response was not ok");
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `gemini-veo-${Date.now()}.mp4`;
+      
+      document.body.appendChild(a);
+      a.click();
+      
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
+    } catch (error) {
+      console.error("Download failed", error);
+      setError("Could not download automatically. Please right-click the video and select 'Save Video As'.");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -96,7 +127,7 @@ const VideoGenerator: React.FC = () => {
               <label className="block text-sm font-bold text-slate-700 mb-2">Video Description</label>
               <textarea 
                 className="w-full p-4 rounded-xl border-2 border-slate-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all min-h-[120px] text-lg"
-                placeholder="A futuristic city with flying cars in a cyberpunk style..."
+                placeholder="A cinematic drone shot of a futuristic city at sunset..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
               />
@@ -129,7 +160,7 @@ const VideoGenerator: React.FC = () => {
                 >
                   {isGenerating ? (
                     <>
-                      <Loader2 size={20} className="animate-spin" /> Generating Video...
+                      <Loader2 size={20} className="animate-spin" /> Generating...
                     </>
                   ) : (
                     <>
@@ -147,8 +178,8 @@ const VideoGenerator: React.FC = () => {
           {isGenerating ? (
              <div className="text-center">
                <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
-               <h3 className="text-lg font-bold text-slate-700">Creating your masterpiece...</h3>
-               <p className="text-slate-500 text-sm mt-2">This usually takes about 1-2 minutes.</p>
+               <h3 className="text-lg font-bold text-slate-700">Creating your video...</h3>
+               <p className="text-slate-500 text-sm mt-2">This typically takes 1-2 minutes. Please wait.</p>
              </div>
           ) : error ? (
             <div className="text-center text-red-500 bg-red-50 p-6 rounded-xl max-w-md">
@@ -167,20 +198,23 @@ const VideoGenerator: React.FC = () => {
                   controls 
                   autoPlay 
                   loop 
+                  crossOrigin="anonymous"
                   className="w-full h-auto"
                 />
               </div>
-              <div className="mt-4 flex justify-end">
-                 <a 
-                   href={videoUrl} 
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   download="generated-video.mp4"
-                   className="text-white bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors shadow-md"
+              <div className="mt-6 flex justify-end">
+                 <button 
+                   onClick={handleDownload}
+                   disabled={isDownloading}
+                   className="text-white bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-bold text-base flex items-center gap-2 transition-colors shadow-md disabled:opacity-70"
                  >
-                   <Download size={16} />
-                   Download Video
-                 </a>
+                   {isDownloading ? (
+                     <Loader2 size={18} className="animate-spin" />
+                   ) : (
+                     <Download size={18} />
+                   )}
+                   {isDownloading ? 'Downloading...' : 'Download Video'}
+                 </button>
               </div>
             </div>
           ) : (

@@ -25,7 +25,7 @@ export const analyzeVideoContent = async (url: string): Promise<AiAnalysisResult
         "sentiment": "Positive, Neutral, or Negative"
       }
       
-      Return ONLY the JSON string.
+      Return ONLY the JSON string. Do not include any markdown formatting like \`\`\`json.
     `;
 
     const response = await ai.models.generateContent({
@@ -66,7 +66,6 @@ export const analyzeVideoContent = async (url: string): Promise<AiAnalysisResult
 
 export const generateAiVideo = async (prompt: string, aspectRatio: '16:9' | '9:16' = '16:9'): Promise<string> => {
   // IMPORTANT: Re-initialize AI with the selected key from environment or dialog context
-  // This handles the race condition mentioned in docs by creating a fresh instance
   const currentKey = process.env.API_KEY;
   const freshAi = new GoogleGenAI({ apiKey: currentKey });
 
@@ -75,7 +74,7 @@ export const generateAiVideo = async (prompt: string, aspectRatio: '16:9' | '9:1
     prompt: prompt,
     config: {
       numberOfVideos: 1,
-      resolution: '1080p',
+      resolution: '1080p', // 1080p is supported for this model
       aspectRatio: aspectRatio
     }
   });

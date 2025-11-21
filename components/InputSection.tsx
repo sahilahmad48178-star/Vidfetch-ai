@@ -25,12 +25,12 @@ const InputSection: React.FC<InputSectionProps> = ({ onAnalyze, isProcessing }) 
       <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight">
         Universal Video Downloader <br/>
         <span className="text-brand-600 text-3xl sm:text-4xl md:text-5xl block mt-2 font-bold">
-          Any Link. Any Site. AI Powered.
+          Paste Link. Click Download.
         </span>
       </h1>
       <p className="text-slate-600 max-w-2xl mx-auto text-lg mb-10">
-        Paste a URL from <strong>YouTube, TikTok, Instagram Reels, Facebook, X (Twitter)</strong>, or any other site. 
-        Our AI engine processes it instantly.
+        Free video downloader for <strong>YouTube, TikTok, Instagram, Facebook, Twitter (X)</strong> and many more. 
+        High quality MP4 and MP3 supported.
       </p>
 
       <form onSubmit={handleSubmit} className="max-w-3xl mx-auto relative group">
@@ -39,7 +39,7 @@ const InputSection: React.FC<InputSectionProps> = ({ onAnalyze, isProcessing }) 
         </div>
         <input
           type="url"
-          placeholder="Paste URL (YouTube, Instagram, TikTok, Facebook...)"
+          placeholder="Paste your video link here (e.g. youtube.com/watch?v=...)"
           className="w-full pl-12 pr-36 py-5 rounded-xl border-2 border-slate-200 shadow-lg text-lg focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100 transition-all"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
@@ -48,7 +48,7 @@ const InputSection: React.FC<InputSectionProps> = ({ onAnalyze, isProcessing }) 
         <button
           type="submit"
           disabled={isProcessing}
-          className="absolute right-2 top-2 bottom-2 bg-brand-500 hover:bg-brand-600 text-white font-bold px-6 rounded-lg flex items-center gap-2 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+          className="absolute right-2 top-2 bottom-2 bg-brand-500 hover:bg-brand-600 text-white font-bold px-6 rounded-lg flex items-center gap-2 transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
         >
           {isProcessing ? (
             <>
@@ -64,10 +64,10 @@ const InputSection: React.FC<InputSectionProps> = ({ onAnalyze, isProcessing }) 
       </form>
 
       <div className="mt-8 flex justify-center gap-6 text-sm text-slate-400 font-medium flex-wrap">
-        <span className="flex items-center gap-1 hover:text-brand-500 transition-colors">✓ TikTok (No Watermark)</span>
-        <span className="flex items-center gap-1 hover:text-brand-500 transition-colors">✓ Instagram Reels & Stories</span>
+        <span className="flex items-center gap-1 hover:text-brand-500 transition-colors">✓ TikTok No Watermark</span>
+        <span className="flex items-center gap-1 hover:text-brand-500 transition-colors">✓ Instagram Reels</span>
         <span className="flex items-center gap-1 hover:text-brand-500 transition-colors">✓ YouTube 4K/Shorts</span>
-        <span className="flex items-center gap-1 hover:text-brand-500 transition-colors">✓ Facebook & Twitter</span>
+        <span className="flex items-center gap-1 hover:text-brand-500 transition-colors">✓ Facebook HD</span>
       </div>
     </div>
   );

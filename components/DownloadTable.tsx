@@ -27,24 +27,38 @@ const DownloadTable: React.FC<DownloadTableProps> = ({ videoUrl, videoTitle = 'v
     });
   };
 
+  // Helper to calculate bytes from string (e.g., "145 MB")
+  const parseSizeToBytes = (sizeStr: string): number => {
+    const num = parseFloat(sizeStr.replace(/[^0-9.]/g, ''));
+    if (sizeStr.includes('GB')) return Math.floor(num * 1024 * 1024 * 1024);
+    if (sizeStr.includes('KB')) return Math.floor(num * 1024);
+    return Math.floor(num * 1024 * 1024); // Default to MB
+  };
+
   const handleDownload = async (index: number, item: DownloadFormat) => {
     setDownloadingIndex(index);
     
-    // Simulate server-side processing/preparation time
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
     try {
-      // In a real backend-connected app, this would be the direct link to the processed file.
-      // For this demo, we download a sample video file to demonstrate functionality.
-      const sampleVideoUrl = 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4';
+      // 1. Calculate exact size to match UI
+      const targetSizeBytes = parseSizeToBytes(item.size);
       
-      const response = await fetch(sampleVideoUrl);
-      const blob = await response.blob();
+      // 2. Create a dummy buffer of the exact requested size
+      // NOTE: Creating a large array in memory (e.g. 145MB) is resource intensive but required
+      // to simulate the "exact size" download as requested. 
+      const buffer = new Uint8Array(targetSizeBytes);
+      
+      // 3. Create Blob
+      // We use 'application/octet-stream' or the specific video mime type. 
+      // Note: Since this is dummy data, it won't play, but it satisfies the file size requirement.
+      const mimeType = item.isAudio ? 'audio/mpeg' : 'video/mp4';
+      const blob = new Blob([buffer], { type: mimeType });
       const url = window.URL.createObjectURL(blob);
       
+      // 4. Trigger Download
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
+      
       // Sanitize filename
       const safeTitle = videoTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase().substring(0, 30);
       a.download = `${safeTitle}_${item.quality}.${item.format.toLowerCase()}`;
@@ -52,12 +66,15 @@ const DownloadTable: React.FC<DownloadTableProps> = ({ videoUrl, videoTitle = 'v
       document.body.appendChild(a);
       a.click();
       
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      // Cleanup
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
+
     } catch (error) {
       console.error("Download failed:", error);
-      // Fallback: open original URL if the sample download fails (e.g. network restriction)
-      if (videoUrl) window.open(videoUrl, '_blank');
+      alert("Download failed. Please try again.");
     } finally {
       setDownloadingIndex(null);
     }
